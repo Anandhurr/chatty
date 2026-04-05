@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>EchoMatch · Join Anonymous Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .glass-panel {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(18, 25, 45, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .screen {
+            padding: 1.5rem 1.2rem;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #ffffff, #ffb347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.3rem;
+        }
+
+        .tagline {
+            color: #a6b0cf;
+            font-size: 0.85rem;
+            border-left: 3px solid #ff9f4a;
+            padding-left: 12px;
+            margin-bottom: 1.8rem;
+        }
+
+        /* Mode Selection Buttons */
+        .mode-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: #0f1625;
+            border: 1.5px solid #2a3452;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            color: #cbd5e6;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #ff8c2e, #ff6b1a);
+            border-color: #ffd966;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 26, 0.3);
+        }
+
+        .mode-btn:hover {
+            border-color: #ff9f4a;
+            transform: translateY(-2px);
+        }
+
+        /* Public Chat Section */
+        .public-section, .private-section {
+            transition: all 0.3s ease;
+        }
+
+        .private-section.hidden, .public-section.hidden {
+            display: none;
+        }
+
+        .step {
+            background: rgba(10, 16, 28, 0.7);
+            border-radius: 1.5rem;
+            padding: 1rem 1.2rem;
+            margin: 1.2rem 0;
+            border: 1px solid rgba(255, 160, 70, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            border-color: rgba(255, 160, 70, 0.6);
+            background: rgba(10, 16, 28, 0.8);
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffb05a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gender-group, .choice-row {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .gender-btn, .pref-card {
+            background: #0f1625;
+            border: 1.5px solid #2a3452;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+            color: #cbd5e6;
+        }
+
+        .pref-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px;
+        }
+
+        .gender-btn.active, .pref-card.active {
+            background: linear-gradient(135deg, #ff8c2e, #ff6b1a);
+            border-color: #ffd966;
+            transform: scale(1.02);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 107, 26, 0.3);
+        }
+
+        .gender-btn:hover, .pref-card:hover {
+            border-color: #ff9f4a;
+            transform: translateY(-2px);
+        }
+
+        .pref-icon {
+            font-size: 1.8rem;
+        }
+
+        .pref-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .start-btn, .create-room-btn, .join-room-btn {
+            background: linear-gradient(95deg, #ff8c2e, #ffb347);
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 60px;
+            color: #0a0f1a;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .create-room-btn {
+            background: linear-gradient(95deg, #2ecc71, #27ae60);
+        }
+
+        .join-room-btn {
+            background: linear-gradient(95deg, #3498db, #2980b9);
+        }
+
+        .start-btn:hover, .create-room-btn:hover, .join-room-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(255, 140, 46, 0.4);
+        }
+
+        .start-btn:active, .create-room-btn:active, .join-room-btn:active {
+            transform: scale(0.98);
+        }
+
+        .room-id-input {
+            width: 100%;
+            padding: 14px;
+            background: #0e1424;
+            border: 1px solid #3f4a6b;
+            border-radius: 60px;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        .room-id-input:focus {
+            border-color: #ff9f4a;
+            outline: none;
+        }
+
+        .room-id-display {
+            background: #0e1424;
+            padding: 15px;
+            border-radius: 60px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .room-code {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: #ffb347;
+            font-family: monospace;
+        }
+
+        .copy-btn {
+            background: rgba(255, 140, 46, 0.3);
+            border: 1px solid #ff9f4a;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-top: 10px;
+            color: #ffbc7a;
+        }
+
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1.8rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #7e8aa8;
+        }
+
+        .feature-icon {
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .footer-note {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 1rem;
+            color: #5f6c92;
+        }
+
+        @media (max-width: 480px) {
+            .screen {
+                padding: 1.2rem 1rem;
+            }
+            .gender-btn, .pref-card {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .room-code {
+                font-size: 1.5rem;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-panel">
+    <div class="screen">
+        <h1>✨ EchoMatch</h1>
+        <div class="tagline">anonymous · genuine connections · real conversations</div>
+
+        <!-- Mode Selection -->
+        <div class="mode-selector">
+            <div id="publicModeBtn" class="mode-btn active">🌍 Public Chat</div>
+            <div id="privateModeBtn" class="mode-btn">🔒 Private Chat</div>
+        </div>
+
+        <!-- Public Chat Section -->
+        <div id="publicSection" class="public-section">
+            <div class="step">
+                <div class="step-title">
+                    <span>🌟</span> YOUR GENDER
+                </div>
+                <div class="gender-group">
+                    <div data-gender="female" class="gender-btn" id="genderFemale">♀ Female</div>
+                    <div data-gender="male" class="gender-btn" id="genderMale">♂ Male</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">
+                    <span>🎯</span> WHO TO CHAT WITH
+                </div>
+                <div class="choice-row">
+                    <div data-pref="female" class="pref-card" id="prefFemale">
+                        <span class="pref-icon">👩‍🦰</span>
+                        <span class="pref-label">Female</span>
+                    </div>
+                    <div data-pref="male" class="pref-card" id="prefMale">
+                        <span class="pref-icon">👨</span>
+                        <span class="pref-label">Male</span>
+                    </div>
+                    <div data-pref="any" class="pref-card" id="prefAny">
+                        <span class="pref-icon">🌍</span>
+                        <span class="pref-label">Any</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="start-btn" id="startChatBtn">
+                🚀 START PUBLIC CHAT
+            </button>
+        </div>
+
+        <!-- Private Chat Section -->
+        <div id="privateSection" class="private-section hidden">
+            <div class="step">
+                <div class="step-title">
+                    <span>🔐</span> CREATE PRIVATE ROOM
+                </div>
+                <button class="create-room-btn" id="createRoomBtn">
+                    🏠 Create New Room
+                </button>
+                <div id="roomCreatedDisplay" style="display: none;">
+                    <div class="room-id-display">
+                        <div style="font-size: 0.8rem; color: #a6b0cf; margin-bottom: 8px;">Your Room ID:</div>
+                        <div class="room-code" id="roomCode"></div>
+                        <button class="copy-btn" id="copyRoomBtn">📋 Copy Room ID</button>
+                    </div>
+                    <div class="footer-note" style="margin-top: 10px;">Share this code with your friend to chat privately</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">
+                    <span>🚪</span> JOIN PRIVATE ROOM
+                </div>
+                <input type="text" id="joinRoomInput" class="room-id-input" placeholder="Enter 4-character room ID" maxlength="4" autocomplete="off">
+                <button class="join-room-btn" id="joinRoomBtn">
+                    🔗 Join Room
+                </button>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <span>Instant match</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔒</span>
+                <span>100% anonymous</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🏠</span>
+                <span>Private rooms</span>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            💬 Public: Random matching with preferences · 🔒 Private: Create or join a private room
+        </div>
+    </div>
+</div>
+
+<script>
+    let myGender = null;
+    let myPreference = null;
+    let currentMode = 'public';
+
+    const publicSection = document.getElementById('publicSection');
+    const privateSection = document.getElementById('privateSection');
+    const publicModeBtn = document.getElementById('publicModeBtn');
+    const privateModeBtn = document.getElementById('privateModeBtn');
+    const startBtn = document.getElementById('startChatBtn');
+    const createRoomBtn = document.getElementById('createRoomBtn');
+    const joinRoomBtn = document.getElementById('joinRoomBtn');
+    const joinRoomInput = document.getElementById('joinRoomInput');
+    const roomCreatedDisplay = document.getElementById('roomCreatedDisplay');
+    const roomCodeSpan = document.getElementById('roomCode');
+    const copyRoomBtn = document.getElementById('copyRoomBtn');
+
+    // Gender and preference elements
+    const genderFemale = document.getElementById('genderFemale');
+    const genderMale = document.getElementById('genderMale');
+    const prefFemale = document.getElementById('prefFemale');
+    const prefMale = document.getElementById('prefMale');
+    const prefAny = document.getElementById('prefAny');
+
+    // Mode switching
+    publicModeBtn.addEventListener('click', () => {
+        currentMode = 'public';
+        publicModeBtn.classList.add('active');
+        privateModeBtn.classList.remove('active');
+        publicSection.classList.remove('hidden');
+        privateSection.classList.add('hidden');
+    });
+
+    privateModeBtn.addEventListener('click', () => {
+        currentMode = 'private';
+        privateModeBtn.classList.add('active');
+        publicModeBtn.classList.remove('active');
+        privateSection.classList.remove('hidden');
+        publicSection.classList.add('hidden');
+        // Hide room created display when switching to private mode
+        roomCreatedDisplay.style.display = 'none';
+    });
+
+    // Gender selection (for public chat)
+    genderFemale.addEventListener('click', () => {
+        myGender = 'female';
+        genderFemale.classList.add('active');
+        genderMale.classList.remove('active');
+    });
+
+    genderMale.addEventListener('click', () => {
+        myGender = 'male';
+        genderMale.classList.add('active');
+        genderFemale.classList.remove('active');
+    });
+
+    // Preference selection (for public chat)
+    prefFemale.addEventListener('click', () => {
+        myPreference = 'female';
+        prefFemale.classList.add('active');
+        prefMale.classList.remove('active');
+        prefAny.classList.remove('active');
+    });
+
+    prefMale.addEventListener('click', () => {
+        myPreference = 'male';
+        prefMale.classList.add('active');
+        prefFemale.classList.remove('active');
+        prefAny.classList.remove('active');
+    });
+
+    prefAny.addEventListener('click', () => {
+        myPreference = 'any';
+        prefAny.classList.add('active');
+        prefFemale.classList.remove('active');
+        prefMale.classList.remove('active');
+    });
+
+    // Generate random 4-character room ID (uppercase letters + numbers)
+    function generateRoomId() {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 4; i++) {
+            result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+    }
+
+    // Create room
+    createRoomBtn.addEventListener('click', () => {
+        const roomId = generateRoomId();
+        localStorage.setItem('echoMatch_roomId', roomId);
+        localStorage.setItem('echoMatch_isCreator', 'true');
+        localStorage.setItem('echoMatch_mode', 'private');
+        
+        // Show the room code
+        roomCodeSpan.textContent = roomId;
+        roomCreatedDisplay.style.display = 'block';
+        
+        // Auto-redirect after showing code (give time to copy)
+        setTimeout(() => {
+            window.location.href = 'private-chat.html';
+        }, 2000);
+    });
+
+    // Copy room ID to clipboard
+    copyRoomBtn.addEventListener('click', () => {
+        const roomCode = roomCodeSpan.textContent;
+        navigator.clipboard.writeText(roomCode).then(() => {
+            copyRoomBtn.textContent = '✅ Copied!';
+            setTimeout(() => {
+                copyRoomBtn.textContent = '📋 Copy Room ID';
+            }, 2000);
+        });
+    });
+
+    // Join room
+    joinRoomBtn.addEventListener('click', () => {
+        const roomId = joinRoomInput.value.trim().toUpperCase();
+        if (!roomId) {
+            alert('Please enter a room ID');
+            return;
+        }
+        if (roomId.length !== 4) {
+            alert('Room ID must be 4 characters');
+            return;
+        }
+        
+        localStorage.setItem('echoMatch_roomId', roomId);
+        localStorage.setItem('echoMatch_isCreator', 'false');
+        localStorage.setItem('echoMatch_mode', 'private');
+        window.location.href = 'private-chat.html';
+    });
+
+    joinRoomInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            joinRoomBtn.click();
+        }
+    });
+
+    // Public chat start
+    startBtn.addEventListener('click', () => {
+        if (!myGender) {
+            alert("👤 Please select your gender");
+            return;
+        }
+        if (!myPreference) {
+            alert("🎯 Please select who you want to chat with");
+            return;
+        }
+
+        localStorage.setItem('echoMatch_gender', myGender);
+        localStorage.setItem('echoMatch_preference', myPreference);
+        localStorage.setItem('echoMatch_mode', 'public');
+        window.location.href = 'chat.html';
+    });
+
+    window.addEventListener('load', () => {
+        localStorage.removeItem('echoMatch_gender');
+        localStorage.removeItem('echoMatch_preference');
+        localStorage.removeItem('echoMatch_roomId');
+        localStorage.removeItem('echoMatch_isCreator');
+        localStorage.removeItem('echoMatch_mode');
+        localStorage.removeItem('echoMatch_shouldRefresh');
+    });
+</script>
+
+</body>
+</html>

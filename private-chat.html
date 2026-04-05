@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>EchoMatch · Private Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .glass-panel {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(18, 25, 45, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .screen {
+            padding: 1.2rem;
+        }
+
+        #chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px dashed rgba(255, 160, 70, 0.4);
+        }
+
+        h2 {
+            font-weight: 700;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #ffffff, #ffb347);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+
+        .room-info {
+            background: rgba(255, 140, 46, 0.2);
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            color: #ffbc7a;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid #ff9f4a;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #ffbc7a;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            background: rgba(30, 41, 59, 1);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn.end {
+            background: rgba(220, 60, 50, 0.2);
+            border-color: #ff6b6b;
+            color: #ffaaaa;
+        }
+
+        .action-btn.end:hover {
+            background: rgba(220, 60, 50, 0.35);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        #status {
+            background: #0f1625cc;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #ffbc7a;
+            flex: 1;
+        }
+
+        #messages {
+            list-style: none;
+            height: 55vh;
+            max-height: 450px;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .msg-bubble {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            word-break: break-word;
+            animation: fadeSlide 0.2s ease;
+        }
+
+        .msg-you {
+            align-self: flex-end;
+            background: linear-gradient(120deg, #ff8c2e, #ffaa55);
+            color: #0f0f1c;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-stranger {
+            align-self: flex-start;
+            background: #1f2a44;
+            border: 1px solid #3a4570;
+            color: #f0f3ff;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-system {
+            align-self: center;
+            background: #1a1f2e80;
+            font-size: 0.7rem;
+            padding: 5px 12px;
+            border-radius: 30px;
+            color: #bbccff;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .msg-warning {
+            align-self: center;
+            background: rgba(255, 100, 50, 0.25);
+            border: 1px solid #ff8866;
+            color: #ffaa88;
+            font-size: 0.8rem;
+            padding: 10px 18px;
+            border-radius: 30px;
+            text-align: center;
+            font-weight: 600;
+            animation: shake 0.5s ease;
+        }
+
+        .msg-error {
+            align-self: center;
+            background: rgba(220, 60, 50, 0.3);
+            border: 1px solid #ff5555;
+            color: #ffaaaa;
+            font-size: 0.8rem;
+            padding: 10px 18px;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        .msg-success {
+            align-self: center;
+            background: rgba(50, 200, 100, 0.2);
+            border: 1px solid #66ff88;
+            color: #aaffcc;
+            font-size: 0.75rem;
+            padding: 6px 14px;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #form {
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding-top: 10px;
+            border-top: 1px solid #2a2f44;
+        }
+
+        #input {
+            flex: 1;
+            background: #0e1424;
+            border: 1px solid #3f4a6b;
+            padding: 12px 16px;
+            border-radius: 60px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            -webkit-appearance: none;
+            transition: border-color 0.2s;
+        }
+
+        #input:focus {
+            border-color: #ff9f4a;
+        }
+
+        #input:disabled {
+            opacity: 0.5;
+        }
+
+        .send-btn {
+            background: #ff8c2e;
+            border: none;
+            padding: 0 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: #0c0f1c;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #ffa34d;
+            transform: scale(1.02);
+        }
+
+        .send-btn:active {
+            transform: scale(0.96);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #101624;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff9f4a;
+            border-radius: 10px;
+        }
+
+        .footer-note {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 0.8rem;
+            color: #5f6c92;
+        }
+
+        @media (max-width: 480px) {
+            .screen {
+                padding: 1rem;
+            }
+            .action-btn {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+            h2 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+<div class="glass-panel">
+    <div class="screen">
+        <div id="chat-header">
+            <h2>🔒 Private Chat</h2>
+            <div class="room-info" id="roomInfo">Room: ---</div>
+            <div class="header-buttons">
+                <button id="leaveBtn" class="action-btn end">🚪 Leave Room</button>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <span id="status">🔐 connecting to room...</span>
+        </div>
+        
+        <ul id="messages"></ul>
+        
+        <form id="form">
+            <input id="input" placeholder="Type message..." autocomplete="off" />
+            <button type="submit" class="send-btn">➤ Send</button>
+        </form>
+        
+        <div class="footer-note">
+            🔒 Private room chat · Your messages are only visible to people in this room
+        </div>
+    </div>
+</div>
+
+<script>
+    let socket = null;
+    let roomId = null;
+    let isCreator = false;
+    let isRoomReady = false;
+
+    const leaveBtn = document.getElementById('leaveBtn');
+    const messagesList = document.getElementById('messages');
+    const messageForm = document.getElementById('form');
+    const messageInput = document.getElementById('input');
+    const statusSpan = document.getElementById('status');
+    const roomInfoSpan = document.getElementById('roomInfo');
+
+    function addMessage(text, type = 'system') {
+        const li = document.createElement('li');
+        li.classList.add('msg-bubble');
+        if (type === 'you') {
+            li.classList.add('msg-you');
+            li.textContent = `You: ${text}`;
+        } else if (type === 'stranger') {
+            li.classList.add('msg-stranger');
+            li.textContent = `Friend: ${text}`;
+        } else if (type === 'warning') {
+            li.classList.add('msg-warning');
+            li.textContent = text;
+        } else if (type === 'error') {
+            li.classList.add('msg-error');
+            li.textContent = text;
+        } else if (type === 'success') {
+            li.classList.add('msg-success');
+            li.textContent = text;
+        } else {
+            li.classList.add('msg-system');
+            li.textContent = text;
+        }
+        messagesList.appendChild(li);
+        li.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    function clearMessages() {
+        messagesList.innerHTML = '';
+    }
+
+    function setStatus(msg) {
+        statusSpan.textContent = msg;
+    }
+
+    function enableChatControls(enabled) {
+        messageInput.disabled = !enabled;
+        const sendBtnElem = document.querySelector('#form .send-btn');
+        if (sendBtnElem) sendBtnElem.disabled = !enabled;
+        if (enabled) messageInput.focus();
+    }
+
+    function goToHomePage() {
+        if (socket) {
+            socket.disconnect();
+        }
+        window.location.href = 'index.html';
+    }
+
+    function loadRoomInfo() {
+        roomId = localStorage.getItem('echoMatch_roomId');
+        isCreator = localStorage.getItem('echoMatch_isCreator') === 'true';
+        
+        if (!roomId) {
+            alert('No room selected. Returning to home.');
+            window.location.href = 'index.html';
+            return false;
+        }
+        
+        roomInfoSpan.textContent = `Room: ${roomId}`;
+        console.log(`Room: ${roomId}, Creator: ${isCreator}`);
+        return true;
+    }
+
+    function initPrivateChat() {
+        socket = io({
+            transports: ['websocket', 'polling'],
+            reconnection: true
+        });
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            setStatus("🔐 Joining private room...");
+            socket.emit('join-private-room', { roomId, isCreator });
+        });
+
+        socket.on('room-joined', (data) => {
+            console.log('Room joined:', data);
+            setStatus(`✅ Connected to room ${data.roomId}`);
+            addMessage(`🔐 You joined private room: ${data.roomId}`, 'success');
+            
+            if (data.isCreator) {
+                addMessage(`🏠 You are the room creator. Share the room code with your friend!`, 'system');
+                addMessage(`⏳ Waiting for friend to join...`, 'system');
+                enableChatControls(false);
+                isRoomReady = false;
+            } else {
+                addMessage(`👋 You joined the room! Start chatting with your friend.`, 'success');
+                enableChatControls(true);
+                isRoomReady = true;
+                messageInput.focus();
+            }
+        });
+
+        socket.on('room-already-exists', (data) => {
+            addMessage(`⚠️ Room ${data.roomId} already exists!`, 'error');
+            setStatus("❌ Room exists");
+            setTimeout(() => goToHomePage(), 2000);
+        });
+
+        socket.on('room-joined-full', () => {
+            addMessage(`⚠️ Room ${roomId} is full! Only 2 people allowed per room.`, 'error');
+            setStatus("❌ Room full");
+            setTimeout(() => goToHomePage(), 2000);
+        });
+
+        socket.on('room-not-found', () => {
+            addMessage(`❌ Room ${roomId} not found.`, 'error');
+            setStatus("❌ Room not found");
+            setTimeout(() => goToHomePage(), 2000);
+        });
+
+        socket.on('friend-joined', () => {
+            console.log('Friend joined event received');
+            addMessage(`🎉 Your friend has joined the room! Start chatting!`, 'success');
+            setStatus("👥 Connected - Chat now");
+            enableChatControls(true);
+            isRoomReady = true;
+            messageInput.focus();
+        });
+
+        socket.on('friend-left', () => {
+            addMessage(`👋 Your friend has left the room. Waiting for them to reconnect...`, 'warning');
+            setStatus("👤 Waiting for friend...");
+            enableChatControls(false);
+            isRoomReady = false;
+        });
+
+        socket.on('private-message', (data) => {
+            console.log('Message received:', data);
+            addMessage(data.text, 'stranger');
+        });
+
+        socket.on('private-message-error', (data) => {
+            addMessage(`⚠️ ${data.message}`, 'error');
+        });
+
+        socket.on('room-closed', () => {
+            addMessage(`🔒 Room has been closed. Returning to home...`, 'error');
+            setStatus("Room closed");
+            setTimeout(() => goToHomePage(), 2000);
+        });
+
+        socket.on('disconnect', () => {
+            setStatus("🔌 Disconnected from server");
+            addMessage("Connection lost. Trying to reconnect...", "error");
+            enableChatControls(false);
+            isRoomReady = false;
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error("Connection error:", err);
+            addMessage("⚠️ Server connection issue. Trying again...", "error");
+        });
+    }
+
+    function handleLeave() {
+        if (socket && socket.connected) {
+            socket.emit('leave-private-room', { roomId });
+            addMessage("🚪 Leaving room...", "system");
+            setTimeout(() => goToHomePage(), 500);
+        } else {
+            goToHomePage();
+        }
+    }
+
+    function sendMessage(msg) {
+        if (!socket || !socket.connected) {
+            addMessage("⚠️ Not connected to server.", "system");
+            return false;
+        }
+        if (!isRoomReady) {
+            addMessage("⚠️ Waiting for friend to join...", "system");
+            return false;
+        }
+        socket.emit('private-message', { roomId, text: msg });
+        return true;
+    }
+
+    leaveBtn.addEventListener('click', handleLeave);
+
+    messageForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const msg = messageInput.value.trim();
+        if (msg === "") return;
+        
+        if (sendMessage(msg)) {
+            addMessage(msg, 'you');
+            messageInput.value = "";
+            messageInput.focus();
+        }
+    });
+
+    if (loadRoomInfo()) {
+        clearMessages();
+        setStatus("🔐 Connecting to private room...");
+        enableChatControls(false);
+        initPrivateChat();
+    }
+
+    window.addEventListener('beforeunload', () => {
+        if (socket && socket.connected && roomId) {
+            socket.emit('leave-private-room', { roomId });
+            socket.disconnect();
+        }
+    });
+</script>
+
+</body>
+</html>
